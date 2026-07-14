@@ -1,3 +1,4 @@
+// TODO: Add Twilio request validation middleware before production use
 import { Hono } from 'hono'
 import { greetingResponse } from '../lib/twilio.js'
 
