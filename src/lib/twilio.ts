@@ -21,7 +21,8 @@ export function accessGrantedResponse(dtmfTone: string): string {
   const twiml = new VoiceResponse()
   twiml.say({ voice: 'alice' }, 'Access granted.')
   twiml.pause({ length: 1 })
-  twiml.sendDigits({}, dtmfTone)
+  const digits = twiml.addChild('SendDigits', {})
+  digits.addText(dtmfTone)
   return twiml.toString()
 }
 
