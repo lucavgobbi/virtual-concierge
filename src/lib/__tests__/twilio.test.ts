@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import {
   greetingResponse,
   accessGrantedResponse,
@@ -21,9 +21,16 @@ describe('greetingResponse', () => {
     expect(result).toContain('/handle-input?attempts=1')
   })
 
-  it('includes greeting message', () => {
+  it('uses default greeting when GREETING_MESSAGE is not set', () => {
     const result = greetingResponse(0)
     expect(result).toContain('Enter your 5-digit code or press 0 for concierge')
+  })
+
+  it('uses custom greeting from GREETING_MESSAGE env var', () => {
+    process.env.GREETING_MESSAGE = 'Bem-vindo! Digite seu codigo.'
+    const result = greetingResponse(0)
+    expect(result).toContain('Bem-vindo! Digite seu codigo.')
+    delete process.env.GREETING_MESSAGE
   })
 })
 
