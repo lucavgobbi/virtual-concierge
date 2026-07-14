@@ -31,12 +31,14 @@ export async function validateCode(
 
   const dateStr = now.toISOString().slice(0, 10)
   const timeStr = now.toTimeString().slice(0, 5)
+  const todayStart = new Date(dateStr + 'T00:00:00.000Z')
+  const todayEnd = new Date(dateStr + 'T23:59:59.999Z')
 
   const dateMatch = await prisma.scheduleDate.findFirst({
     where: {
       customerId: customer.id,
       enabled: true,
-      date: dateStr,
+      date: { gte: todayStart, lte: todayEnd },
       startTime: { lte: timeStr },
       endTime: { gte: timeStr },
     },
