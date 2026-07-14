@@ -1,0 +1,49 @@
+import twilio from 'twilio'
+
+const { VoiceResponse } = twilio.twiml
+
+export function greetingResponse(attempts: number): string {
+  const twiml = new VoiceResponse()
+  const gather = twiml.gather({
+    numDigits: 5,
+    timeout: 5,
+    action: `/handle-input?attempts=${attempts}`,
+    method: 'POST',
+  })
+  gather.say(
+    { voice: 'alice' },
+    'Welcome. Enter your 5-digit code or press 0 for concierge.'
+  )
+  return twiml.toString()
+}
+
+export function accessGrantedResponse(dtmfTone: string): string {
+  const twiml = new VoiceResponse()
+  twiml.say({ voice: 'alice' }, 'Access granted.')
+  twiml.pause({ length: 1 })
+  twiml.sendDigits({}, dtmfTone)
+  return twiml.toString()
+}
+
+export function accessDeniedRedirectResponse(attempts: number): string {
+  const twiml = new VoiceResponse()
+  twiml.say({ voice: 'alice' }, 'Invalid or unauthorized code.')
+  twiml.redirect(
+    { method: 'POST' },
+    `/incoming-call?attempts=${attempts}`
+  )
+  return twiml.toString()
+}
+
+export function conciergeRedirectResponse(phoneNumber: string): string {
+  const twiml = new VoiceResponse()
+  twiml.dial(phoneNumber)
+  return twiml.toString()
+}
+
+export function goodbyeResponse(): string {
+  const twiml = new VoiceResponse()
+  twiml.say({ voice: 'alice' }, 'Goodbye.')
+  twiml.hangup()
+  return twiml.toString()
+}
