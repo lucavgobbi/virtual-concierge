@@ -48,3 +48,10 @@ export function goodbyeResponse(): string {
   twiml.hangup()
   return twiml.toString()
 }
+
+export function errorResponse(): string {
+  const twiml = new VoiceResponse()
+  twiml.say({ voice: 'alice' }, 'An unexpected error occurred. Please try again later.')
+  twiml.hangup()
+  return twiml.toString()
+}

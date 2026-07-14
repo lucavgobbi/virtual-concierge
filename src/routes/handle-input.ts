@@ -8,7 +8,9 @@ import {
   accessDeniedRedirectResponse,
   conciergeRedirectResponse,
   goodbyeResponse,
+  errorResponse,
 } from '../lib/twilio.js'
+import { logError } from '../lib/logger.js'
 
 const app = new Hono()
 
@@ -59,8 +61,8 @@ app.post('/handle-input', async (c) => {
 
     return sendErrorResponse(c, attempts)
   } catch (err) {
-    console.error('Unhandled error in /handle-input:', err)
-    return c.newResponse(goodbyeResponse(), 200, { 'Content-Type': 'text/xml' })
+    await logError('/handle-input', err)
+    return c.newResponse(errorResponse(), 200, { 'Content-Type': 'text/xml' })
   }
 })
 

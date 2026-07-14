@@ -5,6 +5,7 @@ import {
   accessDeniedRedirectResponse,
   conciergeRedirectResponse,
   goodbyeResponse,
+  errorResponse,
 } from '../twilio.js'
 
 describe('greetingResponse', () => {
@@ -67,5 +68,17 @@ describe('goodbyeResponse', () => {
   it('includes goodbye message', () => {
     const result = goodbyeResponse()
     expect(result).toContain('Goodbye')
+  })
+})
+
+describe('errorResponse', () => {
+  it('includes Hangup', () => {
+    const result = errorResponse()
+    expect(result).toContain('<Hangup/>')
+  })
+
+  it('includes error message', () => {
+    const result = errorResponse()
+    expect(result).toContain('unexpected error')
   })
 })
