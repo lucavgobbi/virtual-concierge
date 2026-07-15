@@ -7,12 +7,19 @@ import {
   goodbyeResponse,
   errorResponse,
 } from '@/lib/twilio/responses'
+import { validateTwilioRequest } from '@/lib/twilio/validate'
 
 const MAX_ATTEMPTS = 2
 
 export async function POST(request: NextRequest) {
   try {
+    const signature = request.headers.get('x-twilio-signature') || ''
     const formData = await request.formData()
+    const params: Record<string, string> = {}
+    formData.forEach((value, key) => { params[key] = value as string })
+    if (!validateTwilioRequest(request.url, params, signature)) {
+      return new NextResponse('Unauthorized', { status: 401 })
+    }
     const digits = (formData.get('Digits') as string) || ''
     const intercomId = request.nextUrl.searchParams.get('intercomId') || ''
     const attempts = parseInt(request.nextUrl.searchParams.get('attempts') || '0', 10)
@@ -78,8 +85,8 @@ export async function POST(request: NextRequest) {
     }
 
     return sendErrorResponse(intercomId, attempts)
-  } catch {
-    await logAccess({ intercomId: '', codeEntered: '', status: 'error' })
+  } catch (err) {
+    console.error('Unhandled error in handle-input:', err)
     return new NextResponse(errorResponse(), {
       status: 200,
       headers: { 'Content-Type': 'text/xml' },

@@ -16,7 +16,6 @@ export interface Database {
           enabled: boolean
           created_at: string | null
           updated_at: string | null
-          last_connection: string | null
         }
         Insert: {
           id?: string
@@ -28,7 +27,6 @@ export interface Database {
           enabled?: boolean
           created_at?: string | null
           updated_at?: string | null
-          last_connection?: string | null
         }
         Update: {
           id?: string
@@ -40,7 +38,6 @@ export interface Database {
           enabled?: boolean
           created_at?: string | null
           updated_at?: string | null
-          last_connection?: string | null
         }
         Relationships: []
       }
@@ -84,7 +81,6 @@ export interface Database {
           week_day: number | null
           start_time: string
           end_time: string
-          description: string | null
           created_at: string | null
           updated_at: string | null
         }
@@ -97,7 +93,6 @@ export interface Database {
           week_day?: number | null
           start_time: string
           end_time: string
-          description?: string | null
           created_at?: string | null
           updated_at?: string | null
         }
@@ -110,7 +105,6 @@ export interface Database {
           week_day?: number | null
           start_time?: string
           end_time?: string
-          description?: string | null
           created_at?: string | null
           updated_at?: string | null
         }

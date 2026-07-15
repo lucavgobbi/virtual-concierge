@@ -26,6 +26,7 @@ export function accessGrantedResponse(dtmfTone: string): string {
   twiml.pause({ length: 1 })
   const digits = twiml.addChild('SendDigits', {})
   digits.addText(dtmfTone)
+  twiml.hangup()
   return twiml.toString()
 }
 
