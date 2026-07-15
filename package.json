@@ -1,28 +1,25 @@
 {
   "name": "virtual-concierge",
-  "version": "1.0.0",
-  "type": "module",
+  "version": "2.0.0",
+  "private": true,
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "tsx src/index.ts",
-    "build": "tsc",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typegen": "supabase gen types typescript --linked > src/types.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^1.12.0",
-    "@prisma/client": "^5.0.0",
-    "hono": "^4.0.0",
-    "twilio": "^4.0.0"
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "twilio": "^4.23.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "prisma": "^5.0.0",
-    "tsx": "^4.7.0",
     "typescript": "^5.4.0",
-    "vitest": "^4.1.10"
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0"
   }
 }

@@ -6,6 +6,12 @@
     },
     "railway": {
       "name": "Railway"
+    },
+    "supabase": {
+      "name": "Supabase"
+    },
+    "vercel": {
+      "name": "Vercel"
     }
   },
   "resources": {
@@ -24,10 +30,25 @@
       "providerName": "Railway",
       "serviceId": "free"
     },
-    "railway-postgres": {
-      "name": "railway-postgres",
-      "providerName": "Railway",
-      "serviceId": "postgres"
+    "supabase-plan": {
+      "name": "supabase-plan",
+      "providerName": "Supabase",
+      "serviceId": "free"
+    },
+    "supabase-project": {
+      "name": "supabase-project",
+      "providerName": "Supabase",
+      "serviceId": "project"
+    },
+    "vercel-plan": {
+      "name": "vercel-plan",
+      "providerName": "Vercel",
+      "serviceId": "hobby"
+    },
+    "vercel-project": {
+      "name": "vercel-project",
+      "providerName": "Vercel",
+      "serviceId": "project"
     }
   }
 }
