@@ -4,8 +4,141 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export interface Database {
   public: {
-    Tables: Record<string, unknown>
-    Views: Record<string, unknown>
-    Functions: Record<string, unknown>
+    Tables: {
+      intercoms: {
+        Row: {
+          id: string
+          twilio_phone: string
+          enabled: boolean
+          name: string | null
+          created_at: string | null
+          updated_at: string | null
+          last_connection: string | null
+        }
+        Insert: {
+          id?: string
+          twilio_phone: string
+          enabled?: boolean
+          name?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          last_connection?: string | null
+        }
+        Update: {
+          id?: string
+          twilio_phone?: string
+          enabled?: boolean
+          name?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          last_connection?: string | null
+        }
+        Relationships: []
+      }
+      intercom_codes: {
+        Row: {
+          id: string
+          intercom_id: string
+          code: string
+          enabled: boolean
+          description: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          intercom_id: string
+          code: string
+          enabled?: boolean
+          description?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          intercom_id?: string
+          code?: string
+          enabled?: boolean
+          description?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      schedules: {
+        Row: {
+          id: string
+          intercom_code_id: string
+          enabled: boolean
+          type: string
+          date: string | null
+          week_day: number | null
+          start_time: string
+          end_time: string
+          description: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          intercom_code_id: string
+          enabled?: boolean
+          type: string
+          date?: string | null
+          week_day?: number | null
+          start_time: string
+          end_time: string
+          description?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          intercom_code_id?: string
+          enabled?: boolean
+          type?: string
+          date?: string | null
+          week_day?: number | null
+          start_time?: string
+          end_time?: string
+          description?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      access_logs: {
+        Row: {
+          id: string
+          intercom_id: string
+          intercom_code_id: string | null
+          schedule_id: string | null
+          code_entered: string
+          status: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          intercom_id: string
+          intercom_code_id?: string | null
+          schedule_id?: string | null
+          code_entered: string
+          status: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          intercom_id?: string
+          intercom_code_id?: string | null
+          schedule_id?: string | null
+          code_entered?: string
+          status?: string
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: Record<string, never>
+    Functions: Record<string, never>
   }
 }
