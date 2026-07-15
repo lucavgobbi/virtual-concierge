@@ -8,27 +8,36 @@ export interface Database {
       intercoms: {
         Row: {
           id: string
+          name: string
+          greeting: string
           twilio_phone: string
+          concierge_phone: string
+          dtmf_tone: string
           enabled: boolean
-          name: string | null
           created_at: string | null
           updated_at: string | null
           last_connection: string | null
         }
         Insert: {
           id?: string
+          name: string
+          greeting?: string
           twilio_phone: string
+          concierge_phone: string
+          dtmf_tone?: string
           enabled?: boolean
-          name?: string | null
           created_at?: string | null
           updated_at?: string | null
           last_connection?: string | null
         }
         Update: {
           id?: string
+          name?: string
+          greeting?: string
           twilio_phone?: string
+          concierge_phone?: string
+          dtmf_tone?: string
           enabled?: boolean
-          name?: string | null
           created_at?: string | null
           updated_at?: string | null
           last_connection?: string | null
