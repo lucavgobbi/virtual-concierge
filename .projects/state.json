@@ -1,9 +1,6 @@
 {
   "version": 1,
   "providers": {
-    "cloudflare": {
-      "name": "Cloudflare"
-    },
     "railway": {
       "name": "Railway"
     },
@@ -15,28 +12,13 @@
     }
   },
   "resources": {
-    "cloudflare-plan": {
-      "name": "cloudflare-plan",
-      "providerName": "Cloudflare",
-      "serviceId": "workers:free"
-    },
-    "railway-hosting": {
-      "name": "railway-hosting",
-      "providerName": "Railway",
-      "serviceId": "hosting"
-    },
-    "railway-plan": {
-      "name": "railway-plan",
-      "providerName": "Railway",
-      "serviceId": "free"
-    },
     "supabase-plan": {
       "name": "supabase-plan",
       "providerName": "Supabase",
       "serviceId": "free"
     },
-    "supabase-project": {
-      "name": "supabase-project",
+    "supabase-project-2": {
+      "name": "supabase-project-2",
       "providerName": "Supabase",
       "serviceId": "project"
     },

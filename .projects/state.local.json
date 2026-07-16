@@ -40,28 +40,6 @@
     }
   },
   "resources": {
-    "railway-hosting": {
-      "configuration": {},
-      "createdAt": "2026-07-14T01:24:48.647Z",
-      "lastRevealedAt": "2026-07-14T01:24:49.054Z",
-      "lastStatus": "complete",
-      "name": "railway-hosting",
-      "providerId": "prvdr_61UK2uWsoydL7tUBp57Fg",
-      "providerName": "Railway",
-      "resourceId": "fres_61V2J2G2tBiWccvgo16T7aYg3jA8otz7aoHwdBFTE5EW",
-      "serviceId": "hosting"
-    },
-    "railway-plan": {
-      "configuration": {},
-      "createdAt": "2026-07-14T01:21:03.924Z",
-      "lastRevealedAt": "2026-07-14T01:21:04.208Z",
-      "lastStatus": "complete",
-      "name": "railway-plan",
-      "providerId": "prvdr_61UK2uWsoydL7tUBp57Fg",
-      "providerName": "Railway",
-      "resourceId": "fres_61V2IzG2jpR4jNWp716T7aYg3jA8otz7aoHwdBFTEMLg",
-      "serviceId": "free"
-    },
     "supabase-plan": {
       "configuration": {},
       "createdAt": "2026-07-15T02:38:05.717Z",
@@ -73,18 +51,15 @@
       "resourceId": "fres_61V2gf6DjFMjt8CLc16T7aYg3jA8otz7aoHwdBFTE8hk",
       "serviceId": "free"
     },
-    "supabase-project": {
-      "configuration": {
-        "name": "virtual-concierge",
-        "region": "americas"
-      },
-      "createdAt": "2026-07-15T02:38:24.024Z",
+    "supabase-project-2": {
+      "configuration": {},
+      "createdAt": "2026-07-15T03:58:37.562Z",
       "lastRevealedAt": null,
-      "lastStatus": "complete",
-      "name": "supabase-project",
+      "lastStatus": "errored",
+      "name": "supabase-project-2",
       "providerId": "prvdr_61UIXYHdsyF69pZbG52n2",
       "providerName": "Supabase",
-      "resourceId": "fres_61V2gfOcjGKsvZ16o16T7aYg3jA8otz7aoHwdBFTE5cO",
+      "resourceId": "fres_61V2hvIuWyhlO1Qog16T7aYg3jA8otz7aoHwdBFTEDRo",
       "serviceId": "project"
     },
     "vercel-plan": {
@@ -103,7 +78,7 @@
         "name": "virtual-concierge"
       },
       "createdAt": "2026-07-15T02:39:23.012Z",
-      "lastRevealedAt": null,
+      "lastRevealedAt": "2026-07-16T02:53:36.852Z",
       "lastStatus": "complete",
       "name": "vercel-project",
       "providerId": "prvdr_61ULUAr4zlQgZkvXY5LsG",

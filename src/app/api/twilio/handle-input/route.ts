@@ -12,19 +12,26 @@ import { validateTwilioRequest } from '@/lib/twilio/validate'
 const MAX_ATTEMPTS = 2
 
 export async function POST(request: NextRequest) {
+  const formData = await request.formData()
+  const params: Record<string, string> = {}
+  formData.forEach((value, key) => { params[key] = value as string })
+
+  const from = (formData.get('From') as string) || ''
+  const to = (formData.get('To') as string) || ''
+  const callSid = (formData.get('CallSid') as string) || ''
+  const digits = (formData.get('Digits') as string) || ''
+  const intercomId = request.nextUrl.searchParams.get('intercomId') || ''
+  const attempts = parseInt(request.nextUrl.searchParams.get('attempts') || '0', 10)
+
   try {
     const signature = request.headers.get('x-twilio-signature') || ''
-    const formData = await request.formData()
-    const params: Record<string, string> = {}
-    formData.forEach((value, key) => { params[key] = value as string })
     if (!validateTwilioRequest(request.url, params, signature)) {
+      console.warn('[handle-input] Unauthorized request', { from, to, callSid, intercomId, digits })
       return new NextResponse('Unauthorized', { status: 401 })
     }
-    const digits = (formData.get('Digits') as string) || ''
-    const intercomId = request.nextUrl.searchParams.get('intercomId') || ''
-    const attempts = parseInt(request.nextUrl.searchParams.get('attempts') || '0', 10)
 
     if (!intercomId) {
+      console.warn('[handle-input] Missing intercomId', { from, to, callSid, digits })
       return new NextResponse(goodbyeResponse(), {
         status: 200,
         headers: { 'Content-Type': 'text/xml' },
@@ -35,11 +42,13 @@ export async function POST(request: NextRequest) {
     if (digits === '0') {
       const intercom = await lookupIntercomById(intercomId)
       if (!intercom) {
+        console.warn('[handle-input] Concierge intercom not found', { intercomId, from, to, callSid })
         return new NextResponse(goodbyeResponse(), {
           status: 200,
           headers: { 'Content-Type': 'text/xml' },
         })
       }
+      console.log('[handle-input] Redirecting to concierge', { intercomId, conciergePhone: intercom.concierge_phone, from, to, callSid })
       await logAccess({
         intercomId,
         codeEntered: '0',
@@ -54,12 +63,14 @@ export async function POST(request: NextRequest) {
 
     // Invalid format
     if (digits.length !== 5 || digits.startsWith('0')) {
+      console.warn('[handle-input] Invalid code format', { intercomId, digits, from, to, callSid })
       await logAccess({ intercomId, codeEntered: digits, status: 'invalid_code' })
       return sendErrorResponse(intercomId, attempts)
     }
 
     // Validate code
     const result = await validateCode(intercomId, digits, new Date())
+    console.log('[handle-input] Code validation result', { intercomId, digits, status: result.status, granted: result.granted, callSid })
 
     await logAccess({
       intercomId,
@@ -72,11 +83,13 @@ export async function POST(request: NextRequest) {
     if (result.granted) {
       const intercom = await lookupIntercomById(intercomId)
       if (!intercom) {
+        console.warn('[handle-input] Granted intercom not found', { intercomId, callSid })
         return new NextResponse(goodbyeResponse(), {
           status: 200,
           headers: { 'Content-Type': 'text/xml' },
         })
       }
+      console.log('[handle-input] Access granted', { intercomId, digits, callSid })
       const body = accessGrantedResponse(intercom.dtmf_tone)
       return new NextResponse(body, {
         status: 200,
@@ -86,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     return sendErrorResponse(intercomId, attempts)
   } catch (err) {
-    console.error('Unhandled error in handle-input:', err)
+    console.error('[handle-input] Unhandled error', { intercomId, digits, attempts, from, to, callSid, error: String(err) })
     return new NextResponse(errorResponse(), {
       status: 200,
       headers: { 'Content-Type': 'text/xml' },
