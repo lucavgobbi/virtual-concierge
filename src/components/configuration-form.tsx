@@ -6,6 +6,7 @@ import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 
 interface IntercomConfig {
@@ -54,13 +55,7 @@ export function ConfigurationForm({ config }: { config: IntercomConfig }) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="greeting">Greeting</Label>
-        <textarea
-          id="greeting"
-          name="greeting"
-          defaultValue={config.greeting}
-          className="min-h-[80px] w-full rounded-md border px-3 py-2 text-sm"
-          required
-        />
+        <Textarea id="greeting" name="greeting" defaultValue={config.greeting} required />
       </div>
       <div className="space-y-2">
         <Label htmlFor="from_phone">From Phone</Label>

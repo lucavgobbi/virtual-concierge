@@ -11,6 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type { Tables } from '@/types'
 
 type AccessLog = Tables<'access_logs'>
@@ -75,25 +83,25 @@ export function LogsTable({ intercomId }: { intercomId: string }) {
         />
       </div>
       <div className="rounded-md border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="px-4 py-2 text-left font-medium">Timestamp</th>
-              <th className="px-4 py-2 text-left font-medium">Phone</th>
-              <th className="px-4 py-2 text-left font-medium">Code Entered</th>
-              <th className="px-4 py-2 text-left font-medium">Status</th>
-              <th className="px-4 py-2 text-left font-medium">Details</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Timestamp</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Code Entered</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Details</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {logs.map((l) => (
-              <tr key={l.id} className="border-b">
-                <td className="px-4 py-2 text-muted-foreground">
+              <TableRow key={l.id}>
+                <TableCell className="text-muted-foreground">
                   {l.created_at ? new Date(l.created_at).toLocaleString() : '-'}
-                </td>
-                <td className="px-4 py-2 font-mono text-muted-foreground">{l.code_entered}</td>
-                <td className="px-4 py-2 font-mono">{l.code_entered}</td>
-                <td className="px-4 py-2">
+                </TableCell>
+                <TableCell className="font-mono text-muted-foreground">{l.code_entered}</TableCell>
+                <TableCell className="font-mono">{l.code_entered}</TableCell>
+                <TableCell>
                   <span className={`rounded-full px-2 py-0.5 text-xs ${
                     l.status === 'success' ? 'bg-green-100 text-green-700' :
                     l.status === 'concierge_redirect' ? 'bg-blue-100 text-blue-700' :
@@ -101,18 +109,18 @@ export function LogsTable({ intercomId }: { intercomId: string }) {
                   }`}>
                     {l.status.replace(/_/g, ' ')}
                   </span>
-                </td>
-                <td className="px-4 py-2 text-muted-foreground">
+                </TableCell>
+                <TableCell className="text-muted-foreground">
                   {l.status === 'success' ? 'Access granted' :
                    l.status === 'invalid_code' ? 'Invalid code entered' :
                    l.status === 'invalid_schedule' ? 'Code valid but outside schedule' :
                    l.status === 'concierge_redirect' ? 'Redirected to concierge' :
                    l.status === 'error' ? 'System error' : l.status.replace(/_/g, ' ')}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       {count > pageSize && (
         <div className="flex items-center justify-between">

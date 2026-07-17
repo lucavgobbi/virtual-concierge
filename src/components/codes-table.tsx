@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { CodeFormDialog } from './code-form-dialog'
 import type { Tables } from '@/types'
 
@@ -51,36 +59,36 @@ export function CodesTable({ intercomId }: { intercomId: string }) {
         <CodeFormDialog intercomId={intercomId} />
       </div>
       <div className="rounded-md border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="px-4 py-2 text-left font-medium">Code</th>
-              <th className="px-4 py-2 text-left font-medium">Description</th>
-              <th className="px-4 py-2 text-left font-medium">Status</th>
-              <th className="px-4 py-2 text-left font-medium">Created</th>
-              <th className="px-4 py-2 text-left font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Code</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {codes.map((c) => (
-              <tr key={c.id} className="border-b">
-                <td className="px-4 py-2 font-mono">{c.code}</td>
-                <td className="px-4 py-2">{c.description}</td>
-                <td className="px-4 py-2">
+              <TableRow key={c.id}>
+                <TableCell className="font-mono">{c.code}</TableCell>
+                <TableCell>{c.description}</TableCell>
+                <TableCell>
                   <span className={`rounded-full px-2 py-0.5 text-xs ${c.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                     {c.enabled ? 'Enabled' : 'Disabled'}
                   </span>
-                </td>
-                <td className="px-4 py-2 text-muted-foreground">
+                </TableCell>
+                <TableCell className="text-muted-foreground">
                   {c.created_at ? new Date(c.created_at).toLocaleDateString() : '-'}
-                </td>
-                <td className="px-4 py-2">
+                </TableCell>
+                <TableCell>
                   <CodeFormDialog intercomId={intercomId} code={c} />
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       {count > pageSize && (
         <div className="flex items-center justify-between">

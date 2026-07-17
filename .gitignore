@@ -141,7 +141,7 @@ vite.config.ts.timestamp-*
 
 
 # Logs
-logs/
+/logs/
 
 .vercel
 

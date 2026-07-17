@@ -3,6 +3,16 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
 export function LoginForm() {
   const router = useRouter()
@@ -18,11 +28,9 @@ export function LoginForm() {
     setLoading(true)
     setError('')
 
-    const fn = mode === 'signin'
-      ? supabase.auth.signInWithPassword
-      : supabase.auth.signUp
-
-    const { error: err } = await fn({ email, password })
+    const { error: err } = mode === 'signin'
+      ? await supabase.auth.signInWithPassword({ email, password })
+      : await supabase.auth.signUp({ email, password })
 
     if (err) {
       setError(err.message)
@@ -38,65 +46,61 @@ export function LoginForm() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-sm space-y-4 rounded-lg border p-6 shadow-sm">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-semibold">Virtual Concierge</h1>
-          <p className="text-sm text-muted-foreground">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle>Virtual Concierge</CardTitle>
+          <CardDescription>
             {mode === 'signin' ? 'Sign in to manage your intercoms' : 'Create an account'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {error && (
+              <p className="text-sm text-destructive">{error}</p>
+            )}
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+            </Button>
+          </form>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            {mode === 'signin' ? (
+              <>
+                No account?{' '}
+                <button onClick={() => { setMode('signup'); setError('') }} className="underline hover:text-foreground">
+                  Sign up
+                </button>
+              </>
+            ) : (
+              <>
+                Already have an account?{' '}
+                <button onClick={() => { setMode('signin'); setError('') }} className="underline hover:text-foreground">
+                  Sign in
+                </button>
+              </>
+            )}
           </p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              required
-            />
-          </div>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
-            {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
-          </button>
-        </form>
-        <p className="text-center text-sm text-muted-foreground">
-          {mode === 'signin' ? (
-            <>
-              No account?{' '}
-              <button onClick={() => { setMode('signup'); setError('') }} className="underline hover:text-foreground">
-                Sign up
-              </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <button onClick={() => { setMode('signin'); setError('') }} className="underline hover:text-foreground">
-                Sign in
-              </button>
-            </>
-          )}
-        </p>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
