@@ -75,8 +75,9 @@ Client component. Table with:
 - Columns: Code (5 digits), Description, Status (enabled/disabled), Created, Actions (Edit)
 - **Server-side pagination** — page number controls
 - **Search** — text input filters by `description ILIKE %search%`
-- **Add** button opens a Dialog with form: description, code (auto-generated or manual), enabled toggle. Server action inserts into `intercom_codes`.
-- **Edit** opens same Dialog pre-filled. Server action updates.
+- **Code uniqueness** — code must be unique per intercom (enforced by DB `UNIQUE (intercom_id, code)`)
+- **Add** button opens a Dialog with form: description, code (manually entered, no leading zero), enabled toggle. Server action inserts into `intercom_codes`. Show inline error if code already exists for this intercom.
+- **Edit** opens same Dialog pre-filled (code field read-only after creation). Server action updates.
 - RLS allows `SELECT`/`INSERT`/`UPDATE`/`DELETE` on `intercom_codes` where `intercom_id` is user-accessible.
 
 ### Schedule (`/admin/{intercomId}/schedule`)
@@ -100,7 +101,7 @@ Client component. Calendar view with week/month toggle.
 - Prev/Next navigation (changes week or month)
 - Filters: enabled/disabled/all dropdown, access code dropdown (multi-select or single)
 - **New schedule** button → Dialog form:
-  - Access code (dropdown from `intercom_codes`)
+  - Access code (dropdown from `intercom_codes`, limited to codes for this intercom)
   - Type: date or weekday
   - Date picker (if date type) or day-of-week checkboxes (if weekday type)
   - Start time, end time
