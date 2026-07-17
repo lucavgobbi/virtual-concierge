@@ -21,11 +21,9 @@ type IntercomCode = Tables<'intercom_codes'>
 export function CodeFormDialog({
   intercomId,
   code,
-  onClose,
 }: {
   intercomId: string
   code?: IntercomCode
-  onClose?: () => void
 }) {
   const router = useRouter()
   const supabase = createBrowserSupabaseClient()
@@ -44,22 +42,24 @@ export function CodeFormDialog({
       enabled: formData.get('enabled') === 'on',
     }
 
+    let hasError = false
+
     if (code) {
       const { error: err } = await supabase
         .from('intercom_codes')
         .update(data)
         .eq('id', code.id)
-      if (err) setError(err.message)
+      if (err) { setError(err.message); hasError = true }
     } else {
       const { error: err } = await supabase
         .from('intercom_codes')
         .insert(data)
-      if (err) setError(err.message)
+      if (err) { setError(err.message); hasError = true }
     }
 
     setSaving(false)
 
-    if (!error) {
+    if (!hasError) {
       setOpen(false)
       router.refresh()
     }
