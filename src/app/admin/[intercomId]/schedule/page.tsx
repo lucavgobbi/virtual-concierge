@@ -10,17 +10,17 @@ export default async function SchedulePage({
 }) {
   const supabase = createClient()
 
+  const intercomCodeIds = await supabase
+    .from('intercom_codes')
+    .select('id')
+    .eq('intercom_id', params.intercomId)
+    .then(r => r.data?.map(c => c.id) ?? [])
+
   const [schedulesResult, codesResult] = await Promise.all([
     supabase
       .from('schedules')
       .select('*, intercom_code:intercom_code_id (code, description)')
-      .in('intercom_code_id', (
-        await supabase
-          .from('intercom_codes')
-          .select('id')
-          .eq('intercom_id', params.intercomId)
-      ).data?.map(c => c.id) ?? []
-      ),
+      .in('intercom_code_id', intercomCodeIds),
     supabase
       .from('intercom_codes')
       .select('id, code, description')

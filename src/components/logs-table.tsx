@@ -79,8 +79,10 @@ export function LogsTable({ intercomId }: { intercomId: string }) {
           <thead>
             <tr className="border-b bg-muted/50">
               <th className="px-4 py-2 text-left font-medium">Timestamp</th>
+              <th className="px-4 py-2 text-left font-medium">Phone</th>
               <th className="px-4 py-2 text-left font-medium">Code Entered</th>
               <th className="px-4 py-2 text-left font-medium">Status</th>
+              <th className="px-4 py-2 text-left font-medium">Details</th>
             </tr>
           </thead>
           <tbody>
@@ -89,6 +91,7 @@ export function LogsTable({ intercomId }: { intercomId: string }) {
                 <td className="px-4 py-2 text-muted-foreground">
                   {l.created_at ? new Date(l.created_at).toLocaleString() : '-'}
                 </td>
+                <td className="px-4 py-2 font-mono text-muted-foreground">{l.code_entered}</td>
                 <td className="px-4 py-2 font-mono">{l.code_entered}</td>
                 <td className="px-4 py-2">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${
@@ -98,6 +101,13 @@ export function LogsTable({ intercomId }: { intercomId: string }) {
                   }`}>
                     {l.status.replace(/_/g, ' ')}
                   </span>
+                </td>
+                <td className="px-4 py-2 text-muted-foreground">
+                  {l.status === 'success' ? 'Access granted' :
+                   l.status === 'invalid_code' ? 'Invalid code entered' :
+                   l.status === 'invalid_schedule' ? 'Code valid but outside schedule' :
+                   l.status === 'concierge_redirect' ? 'Redirected to concierge' :
+                   l.status === 'error' ? 'System error' : l.status.replace(/_/g, ' ')}
                 </td>
               </tr>
             ))}

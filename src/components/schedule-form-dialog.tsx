@@ -29,6 +29,7 @@ export function ScheduleFormDialog({ intercomId }: { intercomId: string }) {
   const supabase = createBrowserSupabaseClient()
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const [codes, setCodes] = useState<{ id: string; code: string; description: string | null }[]>([])
   const [type, setType] = useState<'weekday' | 'date'>('weekday')
 
@@ -43,6 +44,7 @@ export function ScheduleFormDialog({ intercomId }: { intercomId: string }) {
 
   async function handleSubmit(formData: FormData) {
     setSaving(true)
+    setError('')
     const data = {
       intercom_code_id: formData.get('intercom_code_id') as string,
       type,
@@ -53,8 +55,9 @@ export function ScheduleFormDialog({ intercomId }: { intercomId: string }) {
       enabled: formData.get('enabled') === 'on',
     }
 
-    await supabase.from('schedules').insert(data)
+    const { error: err } = await supabase.from('schedules').insert(data)
     setSaving(false)
+    if (err) { setError(err.message); return }
     setOpen(false)
     router.refresh()
   }
@@ -126,6 +129,7 @@ export function ScheduleFormDialog({ intercomId }: { intercomId: string }) {
               <Input id="end_time" name="end_time" type="time" defaultValue="18:00" required />
             </div>
           </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex items-center gap-2">
             <Switch id="enabled" name="enabled" defaultChecked />
             <Label htmlFor="enabled">Enabled</Label>

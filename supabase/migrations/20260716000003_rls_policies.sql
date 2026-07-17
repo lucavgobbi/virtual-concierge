@@ -13,6 +13,9 @@ CREATE POLICY "user_select" ON intercoms
 CREATE POLICY "user_update" ON intercoms
   FOR UPDATE USING (
     id IN (SELECT intercom_id FROM user_intercoms WHERE user_id = auth.uid())
+  )
+  WITH CHECK (
+    id IN (SELECT intercom_id FROM user_intercoms WHERE user_id = auth.uid())
   );
 
 -- intercom_codes: SELECT, INSERT, UPDATE, DELETE
