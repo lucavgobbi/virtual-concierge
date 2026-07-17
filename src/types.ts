@@ -145,3 +145,5 @@ export interface Database {
     Functions: Record<string, never>
   }
 }
+
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
