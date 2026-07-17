@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -54,7 +56,7 @@ export function CalendarWeekView({
           </div>
         ))}
         {HOURS.map((hour) => (
-          <>
+          <React.Fragment key={hour}>
             <div key={`h-${hour}`} className="border-b border-r p-2 text-right text-xs text-muted-foreground">
               {String(hour).padStart(2, '0')}:00
             </div>
@@ -86,7 +88,7 @@ export function CalendarWeekView({
                   ))}
               </div>
             ))}
-          </>
+          </React.Fragment>
         ))}
       </div>
     </div>
