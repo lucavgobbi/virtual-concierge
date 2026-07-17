@@ -1,4 +1,4 @@
-INSERT INTO intercoms (id, name, greeting, twilio_phone, concierge_phone, dtmf_tone)
+INSERT INTO intercoms (id, name, greeting, from_phone, concierge_phone, dtmf_tone)
 VALUES
   (
     'a0000000-0000-0000-0000-000000000001',

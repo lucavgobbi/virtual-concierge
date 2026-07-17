@@ -113,7 +113,7 @@ export type Database = {
           greeting: string
           id: string
           name: string
-          twilio_phone: string
+          from_phone: string
           updated_at: string
         }
         Insert: {
@@ -124,7 +124,7 @@ export type Database = {
           greeting?: string
           id?: string
           name: string
-          twilio_phone: string
+          from_phone: string
           updated_at?: string
         }
         Update: {
@@ -135,7 +135,7 @@ export type Database = {
           greeting?: string
           id?: string
           name?: string
-          twilio_phone?: string
+          from_phone?: string
           updated_at?: string
         }
         Relationships: []

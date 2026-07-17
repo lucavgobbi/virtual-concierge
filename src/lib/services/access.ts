@@ -20,7 +20,7 @@ export async function lookupIntercom(twilioPhone: string) {
   const { data, error } = await supabaseAdmin
     .from('intercoms')
     .select('*')
-    .eq('twilio_phone', twilioPhone)
+    .eq('from_phone', twilioPhone)
     .eq('enabled', true)
     .single()
 
