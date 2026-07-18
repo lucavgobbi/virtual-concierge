@@ -8,10 +8,19 @@ import {
   errorResponse,
 } from '@/lib/twilio/responses'
 import { validateTwilioRequest } from '@/lib/twilio/validate'
+import { checkRateLimit } from '@/lib/rate-limit'
 
-const MAX_ATTEMPTS = 2
+const MAX_ATTEMPTS = parseInt(process.env.MAX_CODE_ATTEMPTS || '2', 10)
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX = 30
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+  if (!checkRateLimit(`twilio:handle-input:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+    console.warn('[handle-input] Rate limited', { ip })
+    return new NextResponse('Too Many Requests', { status: 429 })
+  }
+
   const formData = await request.formData()
   const params: Record<string, string> = {}
   formData.forEach((value, key) => { params[key] = value as string })
@@ -19,13 +28,13 @@ export async function POST(request: NextRequest) {
   const from = (formData.get('From') as string) || ''
   const to = (formData.get('To') as string) || ''
   const callSid = (formData.get('CallSid') as string) || ''
-  const digits = (formData.get('Digits') as string) || ''
+  const digits = ((formData.get('Digits') as string) || '').replace(/\D/g, '')
   const intercomId = request.nextUrl.searchParams.get('intercomId') || ''
   const attempts = parseInt(request.nextUrl.searchParams.get('attempts') || '0', 10)
 
   try {
     const signature = request.headers.get('x-twilio-signature') || ''
-    if (!validateTwilioRequest(request.url, params, signature)) {
+    if (!validateTwilioRequest(request, params, signature)) {
       console.warn('[handle-input] Unauthorized request', { from, to, callSid, intercomId, digits })
       return new NextResponse('Unauthorized', { status: 401 })
     }

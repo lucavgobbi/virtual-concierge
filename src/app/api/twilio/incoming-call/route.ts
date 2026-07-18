@@ -2,8 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { lookupIntercom, lookupIntercomById } from "@/lib/services/access";
 import { greetingResponse, goodbyeResponse } from "@/lib/twilio/responses";
 import { validateTwilioRequest } from "@/lib/twilio/validate";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX = 10
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
+  if (!checkRateLimit(`twilio:incoming:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
+    console.warn("[incoming-call] Rate limited", { ip })
+    return new NextResponse("Too Many Requests", { status: 429 })
+  }
+
   const signature = request.headers.get("x-twilio-signature") || "";
   const formData = await request.formData();
   const params: Record<string, string> = {};
@@ -21,7 +31,7 @@ export async function POST(request: NextRequest) {
   const intercomIdParam = request.nextUrl.searchParams.get("intercomId") || "";
 
   try {
-    if (!validateTwilioRequest(request.url, params, signature)) {
+    if (!validateTwilioRequest(request, params, signature)) {
       console.warn("[incoming-call] Unauthorized request", {
         from,
         to,

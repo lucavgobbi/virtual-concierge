@@ -41,24 +41,28 @@ export async function lookupIntercomById(id: string) {
 }
 
 function getNowInTimezone(now: Date, tz: string) {
-  const fmt = new Intl.DateTimeFormat('en-CA', {
+  const timeStr = now.toLocaleTimeString('en-CA', {
     timeZone: tz,
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+  })
+
+  const dateStr = now.toLocaleDateString('en-CA', {
+    timeZone: tz,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
+  })
+
+  const dayOfWeekLabel = now.toLocaleDateString('en-US', {
+    timeZone: tz,
     weekday: 'short',
   })
-  const parts = fmt.formatToParts(now)
-  const get = (type: string) => parts.find(p => p.type === type)!.value
+  const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(dayOfWeekLabel)
+  const safeDayOfWeek = dayOfWeek >= 0 ? dayOfWeek : 0
 
-  return {
-    timeStr: `${get('hour')}:${get('minute')}`,
-    dateStr: `${get('year')}-${get('month')}-${get('day')}`,
-    dayOfWeek: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday')),
-  }
+  return { timeStr, dateStr, dayOfWeek: safeDayOfWeek }
 }
 
 export async function validateCode(

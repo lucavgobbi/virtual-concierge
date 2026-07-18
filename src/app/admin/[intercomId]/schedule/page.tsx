@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/ssr'
+import { notFound } from 'next/navigation'
 import { ScheduleView } from './schedule-view'
 
 export const dynamic = 'force-dynamic'
@@ -9,6 +10,13 @@ export default async function SchedulePage({
   params: { intercomId: string }
 }) {
   const supabase = createClient()
+
+  const { data: ownership } = await supabase
+    .from('user_intercoms')
+    .select('intercom_id')
+    .eq('intercom_id', params.intercomId)
+    .maybeSingle()
+  if (!ownership) notFound()
 
   const intercomCodeIds = await supabase
     .from('intercom_codes')
