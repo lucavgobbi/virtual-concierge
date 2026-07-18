@@ -11,10 +11,14 @@ export default async function CodesPage({
 }) {
   const supabase = createClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) notFound()
+
   const { data: ownership } = await supabase
     .from('user_intercoms')
     .select('intercom_id')
     .eq('intercom_id', params.intercomId)
+    .eq('user_id', user.id)
     .maybeSingle()
   if (!ownership) notFound()
 

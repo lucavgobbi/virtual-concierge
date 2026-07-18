@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { lookupIntercomById, validateCode, logAccess } from '@/lib/services/access'
+import { lookupIntercomById, validateCode, logAccess, checkIntercomRateLimit } from '@/lib/services/access'
 import {
   accessGrantedResponse,
   accessDeniedRedirectResponse,
@@ -8,19 +8,11 @@ import {
   errorResponse,
 } from '@/lib/twilio/responses'
 import { validateTwilioRequest } from '@/lib/twilio/validate'
-import { checkRateLimit } from '@/lib/rate-limit'
 
 const MAX_ATTEMPTS = parseInt(process.env.MAX_CODE_ATTEMPTS || '2', 10)
-const RATE_LIMIT_WINDOW_MS = 60_000
-const RATE_LIMIT_MAX = 30
+const MAX_ATTEMPTS_PER_MINUTE = parseInt(process.env.MAX_ATTEMPTS_PER_MINUTE || '5', 10)
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-  if (!checkRateLimit(`twilio:handle-input:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
-    console.warn('[handle-input] Rate limited', { ip })
-    return new NextResponse('Too Many Requests', { status: 429 })
-  }
-
   const formData = await request.formData()
   const params: Record<string, string> = {}
   formData.forEach((value, key) => { params[key] = value as string })
@@ -41,6 +33,15 @@ export async function POST(request: NextRequest) {
 
     if (!intercomId) {
       console.warn('[handle-input] Missing intercomId', { from, to, callSid, digits })
+      return new NextResponse(goodbyeResponse(), {
+        status: 200,
+        headers: { 'Content-Type': 'text/xml' },
+      })
+    }
+
+    // Rate limit per intercom
+    if (!await checkIntercomRateLimit(intercomId, MAX_ATTEMPTS_PER_MINUTE)) {
+      console.warn('[handle-input] Rate limited', { intercomId, callSid })
       return new NextResponse(goodbyeResponse(), {
         status: 200,
         headers: { 'Content-Type': 'text/xml' },
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Validate code
     const result = await validateCode(intercomId, digits, new Date())
-    console.log('[handle-input] Code validation result', { intercomId, digits, status: result.status, granted: result.granted, callSid })
+    console.log('[handle-input] Code validation result', { intercomId, status: result.status, granted: result.granted, callSid })
 
     await logAccess({
       intercomId,
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
           headers: { 'Content-Type': 'text/xml' },
         })
       }
-      console.log('[handle-input] Access granted', { intercomId, digits, callSid })
+      console.log('[handle-input] Access granted', { intercomId, callSid })
       const body = accessGrantedResponse(intercom.dtmf_tone)
       return new NextResponse(body, {
         status: 200,

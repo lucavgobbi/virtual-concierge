@@ -108,15 +108,15 @@ export function ConfigurationForm({ config }: { config: IntercomConfig }) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="from_phone">From Phone</Label>
-        <Input id="from_phone" name="from_phone" defaultValue={config.from_phone} required />
+        <Input id="from_phone" name="from_phone" defaultValue={config.from_phone} pattern="^\+[1-9]\d{1,14}$" placeholder="+14155551234" required />
       </div>
       <div className="space-y-2">
         <Label htmlFor="concierge_phone">Concierge Phone</Label>
-        <Input id="concierge_phone" name="concierge_phone" defaultValue={config.concierge_phone} required />
+        <Input id="concierge_phone" name="concierge_phone" defaultValue={config.concierge_phone} pattern="^\+[1-9]\d{1,14}$" placeholder="+14155551234" required />
       </div>
       <div className="space-y-2">
         <Label htmlFor="dtmf_tone">DTMF Tone</Label>
-        <Input id="dtmf_tone" name="dtmf_tone" defaultValue={config.dtmf_tone} required />
+        <Input id="dtmf_tone" name="dtmf_tone" defaultValue={config.dtmf_tone} pattern="[0-9A-D*#]" maxLength={1} required />
       </div>
       <div className="space-y-2">
         <Label>Timezone</Label>

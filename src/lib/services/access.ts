@@ -152,3 +152,20 @@ export async function logAccess(params: AccessLogParams): Promise<void> {
     status: params.status,
   })
 }
+
+export async function checkIntercomRateLimit(
+  intercomId: string,
+  maxAttempts: number,
+  windowMs: number = 60_000
+): Promise<boolean> {
+  const windowStart = new Date(Date.now() - windowMs).toISOString()
+
+  const { count, error } = await supabaseAdmin
+    .from('access_logs')
+    .select('id', { count: 'exact', head: true })
+    .eq('intercom_id', intercomId)
+    .gte('created_at', windowStart)
+
+  if (error) return false
+  return (count ?? 0) < maxAttempts
+}

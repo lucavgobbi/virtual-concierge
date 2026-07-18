@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { lookupIntercom, lookupIntercomById } from "@/lib/services/access";
+import { lookupIntercom, lookupIntercomById, checkIntercomRateLimit } from "@/lib/services/access";
 import { greetingResponse, goodbyeResponse } from "@/lib/twilio/responses";
 import { validateTwilioRequest } from "@/lib/twilio/validate";
-import { checkRateLimit } from "@/lib/rate-limit";
 
-const RATE_LIMIT_WINDOW_MS = 60_000
-const RATE_LIMIT_MAX = 10
+const MAX_ATTEMPTS_PER_MINUTE = parseInt(process.env.MAX_ATTEMPTS_PER_MINUTE || '5', 10)
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-  if (!checkRateLimit(`twilio:incoming:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
-    console.warn("[incoming-call] Rate limited", { ip })
-    return new NextResponse("Too Many Requests", { status: 429 })
-  }
-
   const signature = request.headers.get("x-twilio-signature") || "";
   const formData = await request.formData();
   const params: Record<string, string> = {};
@@ -53,6 +45,14 @@ export async function POST(request: NextRequest) {
       });
       const body = goodbyeResponse();
       return new NextResponse(body, {
+        status: 200,
+        headers: { "Content-Type": "text/xml" },
+      });
+    }
+
+    if (!await checkIntercomRateLimit(intercom.id, MAX_ATTEMPTS_PER_MINUTE)) {
+      console.warn("[incoming-call] Rate limited", { intercomId: intercom.id, callSid });
+      return new NextResponse(goodbyeResponse(), {
         status: 200,
         headers: { "Content-Type": "text/xml" },
       });

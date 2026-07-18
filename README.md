@@ -13,6 +13,7 @@ Phone call → Twilio → /api/twilio/incoming-call (greeting + gather DTMF)
 ```
 
 - **IVR Flow:** Incoming call → play greeting → gather 5-digit code → validate against database schedules → send DTMF tone to open door or reject
+- **Rate Limiting:** Database-backed — each intercom is limited to `MAX_ATTEMPTS_PER_MINUTE` access log entries per minute, enforced against the `access_logs` table
 - **Admin UI:** Manage intercoms, access codes, schedules, and view access logs with timezone-aware timestamps
 - **Auth:** Supabase Auth (email/password) with Row-Level Security — each user only sees their assigned intercoms
 
@@ -34,6 +35,7 @@ Phone call → Twilio → /api/twilio/incoming-call (greeting + gather DTMF)
 | `TWILIO_SID` | Twilio account SID |
 | `TWILIO_TOKEN` | Twilio auth token |
 | `MAX_CODE_ATTEMPTS` | Max code entry attempts before hangup (default: `2`) |
+| `MAX_ATTEMPTS_PER_MINUTE` | Max access log entries per intercom per minute (default: `5`) |
 
 ## Local Development
 

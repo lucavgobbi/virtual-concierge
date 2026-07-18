@@ -19,7 +19,6 @@ export function LoginForm() {
   const supabase = createBrowserSupabaseClient()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -28,15 +27,10 @@ export function LoginForm() {
     setLoading(true)
     setError('')
 
-    const { error: err } = mode === 'signin'
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password })
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password })
 
     if (err) {
       setError(err.message)
-    } else if (mode === 'signup') {
-      setError('Check your email for a confirmation link.')
-      setMode('signin')
     } else {
       router.push('/admin')
     }
@@ -49,9 +43,7 @@ export function LoginForm() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle>Virtual Concierge</CardTitle>
-          <CardDescription>
-            {mode === 'signin' ? 'Sign in to manage your intercoms' : 'Create an account'}
-          </CardDescription>
+          <CardDescription>Sign in to manage your intercoms</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,26 +71,9 @@ export function LoginForm() {
               <p className="text-sm text-destructive">{error}</p>
             )}
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+              {loading ? 'Please wait...' : 'Sign In'}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            {mode === 'signin' ? (
-              <>
-                No account?{' '}
-                <button onClick={() => { setMode('signup'); setError('') }} className="underline hover:text-foreground">
-                  Sign up
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{' '}
-                <button onClick={() => { setMode('signin'); setError('') }} className="underline hover:text-foreground">
-                  Sign in
-                </button>
-              </>
-            )}
-          </p>
         </CardContent>
       </Card>
     </div>
