@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { lookupIntercomById, validateCode, logAccess } from '@/lib/services/access'
+import { lookupIntercomById, validateCode, logAccess, checkIntercomRateLimit } from '@/lib/services/access'
 import {
   accessGrantedResponse,
   accessDeniedRedirectResponse,
@@ -9,7 +9,8 @@ import {
 } from '@/lib/twilio/responses'
 import { validateTwilioRequest } from '@/lib/twilio/validate'
 
-const MAX_ATTEMPTS = 2
+const MAX_ATTEMPTS = parseInt(process.env.MAX_CODE_ATTEMPTS || '2', 10)
+const MAX_ATTEMPTS_PER_MINUTE = parseInt(process.env.MAX_ATTEMPTS_PER_MINUTE || '5', 10)
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
@@ -19,19 +20,28 @@ export async function POST(request: NextRequest) {
   const from = (formData.get('From') as string) || ''
   const to = (formData.get('To') as string) || ''
   const callSid = (formData.get('CallSid') as string) || ''
-  const digits = (formData.get('Digits') as string) || ''
+  const digits = ((formData.get('Digits') as string) || '').replace(/\D/g, '')
   const intercomId = request.nextUrl.searchParams.get('intercomId') || ''
   const attempts = parseInt(request.nextUrl.searchParams.get('attempts') || '0', 10)
 
   try {
     const signature = request.headers.get('x-twilio-signature') || ''
-    if (!validateTwilioRequest(request.url, params, signature)) {
+    if (!validateTwilioRequest(request, params, signature)) {
       console.warn('[handle-input] Unauthorized request', { from, to, callSid, intercomId, digits })
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
     if (!intercomId) {
       console.warn('[handle-input] Missing intercomId', { from, to, callSid, digits })
+      return new NextResponse(goodbyeResponse(), {
+        status: 200,
+        headers: { 'Content-Type': 'text/xml' },
+      })
+    }
+
+    // Rate limit per intercom
+    if (!await checkIntercomRateLimit(intercomId, MAX_ATTEMPTS_PER_MINUTE)) {
+      console.warn('[handle-input] Rate limited', { intercomId, callSid })
       return new NextResponse(goodbyeResponse(), {
         status: 200,
         headers: { 'Content-Type': 'text/xml' },
@@ -70,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Validate code
     const result = await validateCode(intercomId, digits, new Date())
-    console.log('[handle-input] Code validation result', { intercomId, digits, status: result.status, granted: result.granted, callSid })
+    console.log('[handle-input] Code validation result', { intercomId, status: result.status, granted: result.granted, callSid })
 
     await logAccess({
       intercomId,
@@ -89,7 +99,7 @@ export async function POST(request: NextRequest) {
           headers: { 'Content-Type': 'text/xml' },
         })
       }
-      console.log('[handle-input] Access granted', { intercomId, digits, callSid })
+      console.log('[handle-input] Access granted', { intercomId, callSid })
       const body = accessGrantedResponse(intercom.dtmf_tone)
       return new NextResponse(body, {
         status: 200,

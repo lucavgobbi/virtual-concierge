@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { lookupIntercom, lookupIntercomById } from "@/lib/services/access";
+import { lookupIntercom, lookupIntercomById, checkIntercomRateLimit } from "@/lib/services/access";
 import { greetingResponse, goodbyeResponse } from "@/lib/twilio/responses";
 import { validateTwilioRequest } from "@/lib/twilio/validate";
+
+const MAX_ATTEMPTS_PER_MINUTE = parseInt(process.env.MAX_ATTEMPTS_PER_MINUTE || '5', 10)
 
 export async function POST(request: NextRequest) {
   const signature = request.headers.get("x-twilio-signature") || "";
@@ -21,7 +23,7 @@ export async function POST(request: NextRequest) {
   const intercomIdParam = request.nextUrl.searchParams.get("intercomId") || "";
 
   try {
-    if (!validateTwilioRequest(request.url, params, signature)) {
+    if (!validateTwilioRequest(request, params, signature)) {
       console.warn("[incoming-call] Unauthorized request", {
         from,
         to,
@@ -43,6 +45,14 @@ export async function POST(request: NextRequest) {
       });
       const body = goodbyeResponse();
       return new NextResponse(body, {
+        status: 200,
+        headers: { "Content-Type": "text/xml" },
+      });
+    }
+
+    if (!await checkIntercomRateLimit(intercom.id, MAX_ATTEMPTS_PER_MINUTE)) {
+      console.warn("[incoming-call] Rate limited", { intercomId: intercom.id, callSid });
+      return new NextResponse(goodbyeResponse(), {
         status: 200,
         headers: { "Content-Type": "text/xml" },
       });

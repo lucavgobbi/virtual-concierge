@@ -20,7 +20,7 @@ export async function lookupIntercom(twilioPhone: string) {
   const { data, error } = await supabaseAdmin
     .from('intercoms')
     .select('*')
-    .eq('twilio_phone', twilioPhone)
+    .eq('from_phone', twilioPhone)
     .eq('enabled', true)
     .single()
 
@@ -40,6 +40,31 @@ export async function lookupIntercomById(id: string) {
   return data
 }
 
+function getNowInTimezone(now: Date, tz: string) {
+  const timeStr = now.toLocaleTimeString('en-CA', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+
+  const dateStr = now.toLocaleDateString('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+
+  const dayOfWeekLabel = now.toLocaleDateString('en-US', {
+    timeZone: tz,
+    weekday: 'short',
+  })
+  const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(dayOfWeekLabel)
+  const safeDayOfWeek = dayOfWeek >= 0 ? dayOfWeek : 0
+
+  return { timeStr, dateStr, dayOfWeek: safeDayOfWeek }
+}
+
 export async function validateCode(
   intercomId: string,
   code: string,
@@ -57,9 +82,14 @@ export async function validateCode(
     return { granted: false, intercomCodeId: null, scheduleId: null, status: 'invalid_code' }
   }
 
-  const timeStr = now.toTimeString().slice(0, 5)
-  const dateStr = now.toISOString().slice(0, 10)
-  const dayOfWeek = now.getDay()
+  const { data: intercom } = await supabaseAdmin
+    .from('intercoms')
+    .select('timezone')
+    .eq('id', intercomId)
+    .single()
+
+  const tz = intercom?.timezone || 'UTC'
+  const { timeStr, dateStr, dayOfWeek } = getNowInTimezone(now, tz)
 
   // First try date-based schedule
   const { data: dateSchedule } = await supabaseAdmin
@@ -121,4 +151,21 @@ export async function logAccess(params: AccessLogParams): Promise<void> {
     code_entered: params.codeEntered,
     status: params.status,
   })
+}
+
+export async function checkIntercomRateLimit(
+  intercomId: string,
+  maxAttempts: number,
+  windowMs: number = 60_000
+): Promise<boolean> {
+  const windowStart = new Date(Date.now() - windowMs).toISOString()
+
+  const { count, error } = await supabaseAdmin
+    .from('access_logs')
+    .select('id', { count: 'exact', head: true })
+    .eq('intercom_id', intercomId)
+    .gte('created_at', windowStart)
+
+  if (error) return false
+  return (count ?? 0) < maxAttempts
 }
