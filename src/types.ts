@@ -110,10 +110,11 @@ export type Database = {
           created_at: string
           dtmf_tone: string
           enabled: boolean
+          from_phone: string
           greeting: string
           id: string
           name: string
-          from_phone: string
+          timezone: string
           updated_at: string
         }
         Insert: {
@@ -121,10 +122,11 @@ export type Database = {
           created_at?: string
           dtmf_tone?: string
           enabled?: boolean
+          from_phone: string
           greeting?: string
           id?: string
           name: string
-          from_phone: string
+          timezone?: string
           updated_at?: string
         }
         Update: {
@@ -132,10 +134,11 @@ export type Database = {
           created_at?: string
           dtmf_tone?: string
           enabled?: boolean
+          from_phone?: string
           greeting?: string
           id?: string
           name?: string
-          from_phone?: string
+          timezone?: string
           updated_at?: string
         }
         Relationships: []

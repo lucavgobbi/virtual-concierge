@@ -8,6 +8,52 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const TIMEZONES = [
+  'UTC',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Anchorage',
+  'Pacific/Honolulu',
+  'America/Phoenix',
+  'America/Toronto',
+  'America/Vancouver',
+  'America/Mexico_City',
+  'America/Sao_Paulo',
+  'America/Buenos_Aires',
+  'America/Santiago',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Europe/Madrid',
+  'Europe/Rome',
+  'Europe/Amsterdam',
+  'Europe/Stockholm',
+  'Europe/Moscow',
+  'Europe/Istanbul',
+  'Asia/Dubai',
+  'Asia/Kolkata',
+  'Asia/Bangkok',
+  'Asia/Singapore',
+  'Asia/Shanghai',
+  'Asia/Tokyo',
+  'Asia/Seoul',
+  'Australia/Sydney',
+  'Australia/Melbourne',
+  'Pacific/Auckland',
+  'Africa/Cairo',
+  'Africa/Johannesburg',
+  'Africa/Lagos',
+]
 
 interface IntercomConfig {
   id: string
@@ -17,12 +63,14 @@ interface IntercomConfig {
   concierge_phone: string
   dtmf_tone: string
   enabled: boolean
+  timezone: string
 }
 
 export function ConfigurationForm({ config }: { config: IntercomConfig }) {
   const router = useRouter()
   const supabase = createBrowserSupabaseClient()
   const [saving, setSaving] = useState(false)
+  const [timezone, setTimezone] = useState(config.timezone || 'UTC')
 
   async function handleSubmit(formData: FormData) {
     setSaving(true)
@@ -32,6 +80,7 @@ export function ConfigurationForm({ config }: { config: IntercomConfig }) {
       from_phone: formData.get('from_phone') as string,
       concierge_phone: formData.get('concierge_phone') as string,
       dtmf_tone: formData.get('dtmf_tone') as string,
+      timezone: timezone,
       enabled: formData.get('enabled') === 'on',
     }
 
@@ -68,6 +117,19 @@ export function ConfigurationForm({ config }: { config: IntercomConfig }) {
       <div className="space-y-2">
         <Label htmlFor="dtmf_tone">DTMF Tone</Label>
         <Input id="dtmf_tone" name="dtmf_tone" defaultValue={config.dtmf_tone} required />
+      </div>
+      <div className="space-y-2">
+        <Label>Timezone</Label>
+        <Select value={timezone} onValueChange={(v) => v && setTimezone(v)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TIMEZONES.map((tz) => (
+              <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex items-center gap-2">
         <Switch id="enabled" name="enabled" defaultChecked={config.enabled} />

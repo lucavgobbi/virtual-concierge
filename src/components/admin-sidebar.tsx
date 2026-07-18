@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams, usePathname } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import {
   Settings,
@@ -21,6 +21,7 @@ const navItems = [
 ]
 
 export function AdminSidebar({ intercomSelector }: { intercomSelector: React.ReactNode }) {
+  const router = useRouter()
   const params = useParams()
   const pathname = usePathname()
   const intercomId = params.intercomId as string
@@ -56,7 +57,7 @@ export function AdminSidebar({ intercomSelector }: { intercomSelector: React.Rea
       <Button
         variant="ghost"
         className="w-full justify-start text-muted-foreground"
-        onClick={() => supabase.auth.signOut()}
+        onClick={async () => { await supabase.auth.signOut(); router.push('/login') }}
       >
         <LogOut className="mr-2 h-4 w-4" />
         Logout

@@ -1,5 +1,7 @@
 'use client'
 
+import { ScheduleDialog } from '@/components/schedule-dialog'
+
 interface Schedule {
   id: string
   start_time: string
@@ -8,7 +10,7 @@ interface Schedule {
   date: string | null
   week_day: number | null
   enabled: boolean
-  intercom_code: { code: string }
+  intercom_code: { code: string; description: string | null }
 }
 
 function getMonthGrid(year: number, month: number): (Date | null)[][] {
@@ -35,10 +37,12 @@ export function CalendarMonthView({
   year,
   month,
   schedules,
+  onToggle,
 }: {
   year: number
   month: number
   schedules: Schedule[]
+  onToggle: (id: string, enabled: boolean) => void
 }) {
   const weeks = getMonthGrid(year, month)
 
@@ -69,19 +73,19 @@ export function CalendarMonthView({
                   <div className="text-sm font-medium">{day.getDate()}</div>
                   <div className="mt-1 space-y-0.5">
                     {schedulesForDay(day)
-                      .filter((s) => s.enabled)
                       .slice(0, 3)
                       .map((s) => (
-                        <div
-                          key={s.id}
-                          className="rounded bg-blue-100 px-1 py-0.5 text-[10px] text-blue-700"
-                        >
-                          {s.intercom_code.code}
-                        </div>
+                        <ScheduleDialog key={s.id} schedule={s} onToggle={onToggle}>
+                          <div
+                            className={`h-full rounded px-1 py-0.5 text-xs cursor-pointer ${s.enabled ? 'bg-green-100 hover:bg-green-200' : 'bg-gray-200 hover:bg-gray-300'}`}
+                          >
+                            {s.intercom_code.description || s.intercom_code.code}
+                          </div>
+                        </ScheduleDialog>
                       ))}
-                    {schedulesForDay(day).filter((s) => s.enabled).length > 3 && (
-                      <div className="text-[10px] text-muted-foreground">
-                        +{schedulesForDay(day).filter((s) => s.enabled).length - 3} more
+                    {schedulesForDay(day).length > 3 && (
+                      <div className="text-xs text-muted-foreground">
+                        +{schedulesForDay(day).length - 3} more
                       </div>
                     )}
                   </div>

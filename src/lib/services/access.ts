@@ -40,6 +40,27 @@ export async function lookupIntercomById(id: string) {
   return data
 }
 
+function getNowInTimezone(now: Date, tz: string) {
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+  })
+  const parts = fmt.formatToParts(now)
+  const get = (type: string) => parts.find(p => p.type === type)!.value
+
+  return {
+    timeStr: `${get('hour')}:${get('minute')}`,
+    dateStr: `${get('year')}-${get('month')}-${get('day')}`,
+    dayOfWeek: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday')),
+  }
+}
+
 export async function validateCode(
   intercomId: string,
   code: string,
@@ -57,9 +78,14 @@ export async function validateCode(
     return { granted: false, intercomCodeId: null, scheduleId: null, status: 'invalid_code' }
   }
 
-  const timeStr = now.toTimeString().slice(0, 5)
-  const dateStr = now.toISOString().slice(0, 10)
-  const dayOfWeek = now.getDay()
+  const { data: intercom } = await supabaseAdmin
+    .from('intercoms')
+    .select('timezone')
+    .eq('id', intercomId)
+    .single()
+
+  const tz = intercom?.timezone || 'UTC'
+  const { timeStr, dateStr, dayOfWeek } = getNowInTimezone(now, tz)
 
   // First try date-based schedule
   const { data: dateSchedule } = await supabaseAdmin

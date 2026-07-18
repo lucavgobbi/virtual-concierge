@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { ScheduleDialog } from '@/components/schedule-dialog'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -57,35 +58,50 @@ export function CalendarWeekView({
         ))}
         {HOURS.map((hour) => (
           <React.Fragment key={hour}>
-            <div key={`h-${hour}`} className="border-b border-r p-2 text-right text-xs text-muted-foreground">
+            <div className="border-b border-r p-2 text-right text-xs text-muted-foreground">
               {String(hour).padStart(2, '0')}:00
             </div>
             {dates.map((_, di) => (
-              <div key={`c-${hour}-${di}`} className="min-h-[40px] border-b p-1">
+              <div key={`c-${hour}-${di}`} className="min-h-[36px] border-b border-r p-0.5 flex flex-col">
                 {scheduleForDay(dates[di])
                   .filter((s) => {
-                    const startH = parseInt(s.start_time.split(':')[0])
-                    return startH === hour
+                    const [startH, startM] = s.start_time.split(':').map(Number)
+                    const [endH, endM] = s.end_time.split(':').map(Number)
+                    const slotStart = hour * 60
+                    const slotEnd = (hour + 1) * 60
+                    const scheduleStart = startH * 60 + startM
+                    const scheduleEnd = endH * 60 + endM
+                    return scheduleStart < slotEnd && scheduleEnd > slotStart
                   })
-                  .map((s) => (
-                    <div
-                      key={s.id}
-                      className={`rounded px-1 py-0.5 text-xs ${s.enabled ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>{s.intercom_code.code}</span>
-                        <button
-                          onClick={() => onToggle(s.id, !s.enabled)}
-                          className="text-[10px] underline"
+                  .map((s) => {
+                    const [startH, startM] = s.start_time.split(':').map(Number)
+                    const [endH, endM] = s.end_time.split(':').map(Number)
+                    const scheduleStartMin = startH * 60 + startM
+                    const scheduleEndMin = endH * 60 + endM
+                    const slotStartMin = hour * 60
+                    const slotEndMin = (hour + 1) * 60
+                    const isStart = scheduleStartMin >= slotStartMin && scheduleStartMin < slotEndMin
+                    const isEnd = scheduleEndMin >= slotStartMin && scheduleEndMin <= slotEndMin
+                    const isSingleHour = isStart && scheduleEndMin <= slotEndMin
+
+                    const continuous = !isSingleHour
+                    let blockClass = 'rounded-md py-1'
+                    if (continuous) {
+                      if (isStart) blockClass = 'rounded-t-md pt-1 pb-0'
+                      else if (isEnd) blockClass = 'rounded-b-md pb-1 pt-0'
+                      else blockClass = 'rounded-none py-0'
+                    }
+
+                    return (
+                      <ScheduleDialog key={s.id} schedule={s} onToggle={onToggle}>
+                        <div
+                          className={`flex-1 px-1 text-xs ${s.enabled ? 'bg-green-100 hover:bg-green-200' : 'bg-gray-200 hover:bg-gray-300'} ${blockClass}`}
                         >
-                          {s.enabled ? 'on' : 'off'}
-                        </button>
-                      </div>
-                      <div className="text-[10px] opacity-75">
-                        {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}
-                      </div>
-                    </div>
-                  ))}
+                          <div className="truncate">{s.intercom_code.description || s.intercom_code.code}</div>
+                        </div>
+                      </ScheduleDialog>
+                    )
+                  })}
               </div>
             ))}
           </React.Fragment>

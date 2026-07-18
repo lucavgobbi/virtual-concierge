@@ -24,7 +24,7 @@ import { Switch } from '@/components/ui/switch'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-export function ScheduleFormDialog({ intercomId }: { intercomId: string }) {
+export function ScheduleFormDialog({ intercomId, onSaved }: { intercomId: string; onSaved?: () => void }) {
   const router = useRouter()
   const supabase = createBrowserSupabaseClient()
   const [open, setOpen] = useState(false)
@@ -60,6 +60,7 @@ export function ScheduleFormDialog({ intercomId }: { intercomId: string }) {
     if (err) { setError(err.message); return }
     setOpen(false)
     router.refresh()
+    onSaved?.()
   }
 
   return (
@@ -76,14 +77,19 @@ export function ScheduleFormDialog({ intercomId }: { intercomId: string }) {
             <Label>Access Code</Label>
             <Select name="intercom_code_id" required>
               <SelectTrigger>
-                <SelectValue placeholder="Select code" />
+                <SelectValue placeholder="Select code">
+                  {(value: string) => {
+                    const c = codes.find(c => c.id === value)
+                    return c ? (c.description || c.code) : value
+                  }}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {codes.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.code} — {c.description}
-                  </SelectItem>
-                ))}
+                  {codes.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.description || c.code}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

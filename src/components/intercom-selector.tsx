@@ -18,6 +18,7 @@ export function IntercomSelector({ intercoms }: { intercoms: Intercom[] }) {
   const router = useRouter()
   const params = useParams()
   const currentId = params.intercomId as string
+  const currentName = intercoms.find(i => i.id === currentId)?.name
 
   return (
     <Select
@@ -25,7 +26,7 @@ export function IntercomSelector({ intercoms }: { intercoms: Intercom[] }) {
       onValueChange={(id) => router.push(`/admin/${id}/configuration`)}
     >
       <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select intercom" />
+        <SelectValue placeholder="Select intercom">{currentName}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {intercoms.map((i) => (

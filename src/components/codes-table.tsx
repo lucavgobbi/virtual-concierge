@@ -56,7 +56,7 @@ export function CodesTable({ intercomId }: { intercomId: string }) {
           onChange={(e) => { setSearch(e.target.value); setPage(0) }}
           className="max-w-sm"
         />
-        <CodeFormDialog intercomId={intercomId} />
+        <CodeFormDialog intercomId={intercomId} onSaved={loadCodes} />
       </div>
       <div className="rounded-md border">
         <Table>
@@ -75,7 +75,7 @@ export function CodesTable({ intercomId }: { intercomId: string }) {
                 <TableCell className="font-mono">{c.code}</TableCell>
                 <TableCell>{c.description}</TableCell>
                 <TableCell>
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${c.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  <span className="text-xs text-muted-foreground">
                     {c.enabled ? 'Enabled' : 'Disabled'}
                   </span>
                 </TableCell>
@@ -83,7 +83,7 @@ export function CodesTable({ intercomId }: { intercomId: string }) {
                   {c.created_at ? new Date(c.created_at).toLocaleDateString() : '-'}
                 </TableCell>
                 <TableCell>
-                  <CodeFormDialog intercomId={intercomId} code={c} />
+                  <CodeFormDialog intercomId={intercomId} code={c} onSaved={loadCodes} />
                 </TableCell>
               </TableRow>
             ))}

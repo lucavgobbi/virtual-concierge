@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { createBrowserSupabaseClient } from '@/lib/supabase/browser'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -23,10 +24,11 @@ export function ScheduleView({
   initialSchedules: Schedule[]
   codes: { id: string; code: string; description: string | null }[]
 }) {
+  const router = useRouter()
   const supabase = createBrowserSupabaseClient()
   const [view, setView] = useState<'week' | 'month'>('week')
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [enabledFilter, setEnabledFilter] = useState('all')
+  const [enabledFilter, setEnabledFilter] = useState('enabled')
   const [codeFilter, setCodeFilter] = useState('all')
   const [schedules, setSchedules] = useState(initialSchedules)
 
@@ -49,7 +51,18 @@ export function ScheduleView({
     setSchedules((prev) =>
       prev.map((s) => (s.id === id ? { ...s, enabled } : s))
     )
-  }, [supabase])
+    router.refresh()
+  }, [supabase, router])
+
+  async function loadSchedules() {
+    const codeIds = codes.map(c => c.id)
+    if (codeIds.length === 0) { setSchedules([]); return }
+    const { data } = await supabase
+      .from('schedules')
+      .select('*, intercom_code:intercom_code_id (code, description)')
+      .in('intercom_code_id', codeIds)
+    setSchedules(data ?? [])
+  }
 
   return (
     <div className="space-y-4">
@@ -65,7 +78,7 @@ export function ScheduleView({
           <Button variant="outline" size="sm" onClick={() => setView(view === 'week' ? 'month' : 'week')}>
             {view === 'week' ? 'Month' : 'Week'}
           </Button>
-          <ScheduleFormDialog intercomId={intercomId} />
+          <ScheduleFormDialog intercomId={intercomId} onSaved={loadSchedules} />
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -90,6 +103,7 @@ export function ScheduleView({
           year={currentDate.getFullYear()}
           month={currentDate.getMonth()}
           schedules={filteredSchedules}
+          onToggle={handleToggle}
         />
       )}
     </div>

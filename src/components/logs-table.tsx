@@ -21,11 +21,28 @@ import {
 } from '@/components/ui/table'
 import type { Tables } from '@/types'
 
-type AccessLog = Tables<'access_logs'>
+type AccessLog = Tables<'access_logs'> & {
+  intercom_code: { code: string; description: string | null } | null
+}
+
+type IntercomCode = { id: string; code: string; description: string | null }
 
 const STATUS_OPTIONS = ['all', 'success', 'invalid_code', 'invalid_schedule', 'concierge_redirect', 'error']
 
-export function LogsTable({ intercomId }: { intercomId: string }) {
+function formatInTimezone(dateStr: string, timezone: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(new Date(dateStr))
+}
+
+export function LogsTable({ intercomId, timezone, codes }: { intercomId: string; timezone: string; codes: IntercomCode[] }) {
   const supabase = createBrowserSupabaseClient()
   const [page, setPage] = useState(0)
   const [logs, setLogs] = useState<AccessLog[]>([])
@@ -33,21 +50,26 @@ export function LogsTable({ intercomId }: { intercomId: string }) {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
   const [codeSearch, setCodeSearch] = useState('')
+  const [codeFilter, setCodeFilter] = useState('all')
   const pageSize = 50
 
-  useEffect(() => { loadLogs() }, [page, statusFilter, codeSearch])
+  useEffect(() => { loadLogs() }, [page, statusFilter, codeSearch, codeFilter])
 
   async function loadLogs() {
     setLoading(true)
     let query = supabase
       .from('access_logs')
-      .select('*', { count: 'exact' })
+      .select('*, intercom_code:intercom_code_id (code, description)', { count: 'exact' })
       .eq('intercom_id', intercomId)
       .order('created_at', { ascending: false })
       .range(page * pageSize, (page + 1) * pageSize - 1)
 
     if (statusFilter !== 'all') {
       query = query.eq('status', statusFilter)
+    }
+
+    if (codeFilter !== 'all') {
+      query = query.eq('intercom_code_id', codeFilter)
     }
 
     if (codeSearch) {
@@ -75,6 +97,19 @@ export function LogsTable({ intercomId }: { intercomId: string }) {
             ))}
           </SelectContent>
         </Select>
+        <Select value={codeFilter} onValueChange={(v) => { setCodeFilter(v ?? 'all'); setPage(0) }}>
+          <SelectTrigger className="w-60">
+            <SelectValue placeholder="Filter by code" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All codes</SelectItem>
+            {codes.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.code} — {c.description || '(no description)'}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Input
           placeholder="Search by code..."
           value={codeSearch}
@@ -87,7 +122,7 @@ export function LogsTable({ intercomId }: { intercomId: string }) {
           <TableHeader>
             <TableRow>
               <TableHead>Timestamp</TableHead>
-              <TableHead>Phone</TableHead>
+              <TableHead>Access Code</TableHead>
               <TableHead>Code Entered</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Details</TableHead>
@@ -96,17 +131,24 @@ export function LogsTable({ intercomId }: { intercomId: string }) {
           <TableBody>
             {logs.map((l) => (
               <TableRow key={l.id}>
-                <TableCell className="text-muted-foreground">
-                  {l.created_at ? new Date(l.created_at).toLocaleString() : '-'}
+                <TableCell className="text-muted-foreground whitespace-nowrap">
+                  {l.created_at ? formatInTimezone(l.created_at, timezone) : '-'}
                 </TableCell>
-                <TableCell className="font-mono text-muted-foreground">{l.code_entered}</TableCell>
+                <TableCell>
+                  {l.intercom_code ? (
+                    <span className="text-xs">
+                      <span className="font-mono">{l.intercom_code.code}</span>
+                      {l.intercom_code.description && (
+                        <span className="ml-1 text-muted-foreground">— {l.intercom_code.description}</span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </TableCell>
                 <TableCell className="font-mono">{l.code_entered}</TableCell>
                 <TableCell>
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${
-                    l.status === 'success' ? 'bg-green-100 text-green-700' :
-                    l.status === 'concierge_redirect' ? 'bg-blue-100 text-blue-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>
+                  <span className="text-xs text-muted-foreground">
                     {l.status.replace(/_/g, ' ')}
                   </span>
                 </TableCell>

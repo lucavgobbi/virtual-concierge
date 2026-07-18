@@ -21,9 +21,11 @@ type IntercomCode = Tables<'intercom_codes'>
 export function CodeFormDialog({
   intercomId,
   code,
+  onSaved,
 }: {
   intercomId: string
   code?: IntercomCode
+  onSaved?: () => void
 }) {
   const router = useRouter()
   const supabase = createBrowserSupabaseClient()
@@ -62,6 +64,7 @@ export function CodeFormDialog({
     if (!hasError) {
       setOpen(false)
       router.refresh()
+      onSaved?.()
     }
   }
 
